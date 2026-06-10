@@ -234,6 +234,36 @@
       transform: translateY(-2px);
     }
 
+    /* לוח שנה קטן עם התאריך האמיתי של היום */
+    .cal-badge {
+      display: inline-flex;
+      flex-direction: column;
+      width: 26px;
+      height: 26px;
+      border-radius: 5px;
+      overflow: hidden;
+      background: #fff;
+      vertical-align: middle;
+      margin-left: 7px;
+      line-height: 1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .cal-badge .cal-top {
+      height: 7px;
+      background: #e74c3c;
+    }
+
+    .cal-badge .cal-day {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1e3c72;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
     /* טבלה שבועית */
     .week-table {
       border-collapse: collapse;
@@ -300,7 +330,10 @@
 <body>
 
   <!-- כפתור טבלה בצד שמאל -->
-  <button class="table-corner-btn" onclick="openTable()">📅 טבלה</button>
+  <button class="table-corner-btn" onclick="openTable()">
+    <span class="cal-badge"><span class="cal-top"></span><span class="cal-day" id="todayNum">–</span></span>
+    טבלה
+  </button>
 
   <!-- מסך פתיחה: מי אתה? -->
   <section id="welcome" class="screen active">
@@ -579,6 +612,9 @@
     function goBack() {
       showScreen('welcome');
     }
+
+    // הצגת התאריך האמיתי של היום על לוח השנה הקטן שבכפתור
+    document.getElementById('todayNum').textContent = new Date().getDate();
 
     // בטעינת הדף — להחיל את הטבלה של היום על שני האנשים אוטומטית
     applyTableForToday();

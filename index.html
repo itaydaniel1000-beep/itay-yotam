@@ -266,6 +266,12 @@
       transform: translateY(-2px);
     }
 
+    /* כפתור סוף יום — בצד ימין */
+    .table-corner-btn-right {
+      left: auto;
+      right: 18px;
+    }
+
     /* לוח שנה קטן עם התאריך האמיתי של היום */
     .cal-badge {
       display: inline-flex;
@@ -388,10 +394,16 @@
 </head>
 <body>
 
-  <!-- כפתור טבלה בצד שמאל -->
+  <!-- כפתור טבלה (במהלך היום) בצד שמאל — מציג את התאריך -->
   <button class="table-corner-btn" onclick="openTable()">
     <span class="cal-badge"><span class="cal-top"></span><span class="cal-day" id="todayNum">–</span></span>
     טבלה
+  </button>
+
+  <!-- כפתור טבלת סוף יום בצד ימין — מציג את מספר היום בשבוע -->
+  <button class="table-corner-btn table-corner-btn-right" onclick="openEndTable()">
+    <span class="cal-badge"><span class="cal-top"></span><span class="cal-day" id="todayWeekNum">–</span></span>
+    סוף יום
   </button>
 
   <!-- מסך פתיחה: מי אתה? -->
@@ -404,40 +416,42 @@
     </div>
   </section>
 
-  <!-- מסך טבלה שבועית -->
+  <!-- מסך טבלה שבועית (במהלך היום) -->
   <section id="tableScreen" class="screen">
     <h1>טבלה לשבוע הקרוב</h1>
     <p class="subtitle">בחר לכל יום מה כל אחד רושם</p>
-    <div class="tables-wrap">
-      <div class="table-block">
-        <h2 class="table-title">סוף יום</h2>
-        <table class="week-table">
-          <thead>
-            <tr>
-              <th>יום</th>
-              <th>יוסי</th>
-              <th>אמי</th>
-            </tr>
-          </thead>
-          <tbody id="endTableBody"></tbody>
-        </table>
-      </div>
-      <div class="table-block">
-        <h2 class="table-title">במהלך היום</h2>
-        <table class="week-table">
-          <thead>
-            <tr>
-              <th>יום</th>
-              <th>יוסי</th>
-              <th>אמי</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div>
+    <table class="week-table">
+      <thead>
+        <tr>
+          <th>יום</th>
+          <th>יוסי</th>
+          <th>אמי</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
     <div class="btn-row">
       <button class="action-btn" onclick="saveTable()">שמור טבלה</button>
+    </div>
+    <button class="back-btn" onclick="goBack()">חזרה</button>
+  </section>
+
+  <!-- מסך טבלת סוף יום -->
+  <section id="endTableScreen" class="screen">
+    <h1>טבלת סוף יום</h1>
+    <p class="subtitle">בחר לכל יום מה כל אחד עושה בסוף היום</p>
+    <table class="week-table">
+      <thead>
+        <tr>
+          <th>יום</th>
+          <th>יוסי</th>
+          <th>אמי</th>
+        </tr>
+      </thead>
+      <tbody id="endTableBody"></tbody>
+    </table>
+    <div class="btn-row">
+      <button class="action-btn" onclick="saveEndTable()">שמור טבלה</button>
     </div>
     <button class="back-btn" onclick="goBack()">חזרה</button>
   </section>
@@ -648,8 +662,12 @@
 
     function openTable() {
       renderTable();
-      renderEndTable();
       showScreen('tableScreen');
+    }
+
+    function openEndTable() {
+      renderEndTable();
+      showScreen('endTableScreen');
     }
 
     function collectTable(selector) {
@@ -665,8 +683,12 @@
 
     function saveTable() {
       safeStore.set('weekTable', JSON.stringify(collectTable('#tableBody select')));
-      safeStore.set('endDayTable', JSON.stringify(collectTable('#endTableBody select')));
       applyTableForToday();
+      alert('הטבלה נשמרה ✓');
+    }
+
+    function saveEndTable() {
+      safeStore.set('endDayTable', JSON.stringify(collectTable('#endTableBody select')));
       alert('הטבלה נשמרה ✓');
     }
 
@@ -774,8 +796,9 @@
       showScreen('welcome');
     }
 
-    // הצגת התאריך האמיתי של היום על לוח השנה הקטן שבכפתור
+    // הצגת התאריך האמיתי על כפתור הטבלה, ומספר היום בשבוע על כפתור סוף יום
     document.getElementById('todayNum').textContent = new Date().getDate();
+    document.getElementById('todayWeekNum').textContent = new Date().getDay() + 1;
 
     // בטעינת הדף — להחיל את הטבלה של היום על שני האנשים אוטומטית
     applyTableForToday();

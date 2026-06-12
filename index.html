@@ -296,6 +296,33 @@
       font-weight: 800;
     }
 
+    /* שתי טבלאות זו לצד זו */
+    .tables-wrap {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      width: min(920px, 96vw);
+      margin-bottom: 22px;
+    }
+
+    .table-block {
+      flex: 1 1 300px;
+      min-width: 270px;
+    }
+
+    .table-title {
+      font-size: 19px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .table-block .week-table {
+      width: 100%;
+      margin-bottom: 0;
+    }
+
     /* טבלה שבועית */
     .week-table {
       border-collapse: collapse;
@@ -381,16 +408,34 @@
   <section id="tableScreen" class="screen">
     <h1>טבלה לשבוע הקרוב</h1>
     <p class="subtitle">בחר לכל יום מה כל אחד רושם</p>
-    <table class="week-table">
-      <thead>
-        <tr>
-          <th>יום</th>
-          <th>יוסי</th>
-          <th>אמי</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+    <div class="tables-wrap">
+      <div class="table-block">
+        <h2 class="table-title">סוף יום</h2>
+        <table class="week-table">
+          <thead>
+            <tr>
+              <th>יום</th>
+              <th>יוסי</th>
+              <th>אמי</th>
+            </tr>
+          </thead>
+          <tbody id="endTableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-block">
+        <h2 class="table-title">במהלך היום</h2>
+        <table class="week-table">
+          <thead>
+            <tr>
+              <th>יום</th>
+              <th>יוסי</th>
+              <th>אמי</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="btn-row">
       <button class="action-btn" onclick="saveTable()">שמור טבלה</button>
     </div>
@@ -549,20 +594,78 @@
       });
     }
 
+    // אופציות לטבלת "סוף יום" (לשני האנשים)
+    const END_OPTIONS = ['לא מגיע', 'אצל אמא', 'אצל אבא'];
+
+    function loadEndTable() {
+      try { return JSON.parse(safeStore.get('endDayTable') || '{}'); }
+      catch (e) { return {}; }
+    }
+
+    // בניית טבלת "סוף יום"
+    function renderEndTable() {
+      const saved = loadEndTable();
+      const today = todayName();
+      const body = document.getElementById('endTableBody');
+      body.innerHTML = '';
+
+      DAYS.forEach(function (day) {
+        const tr = document.createElement('tr');
+        if (day === today) tr.className = 'today';
+
+        const dayCell = document.createElement('td');
+        dayCell.className = 'day-name';
+        dayCell.textContent = day + (day === today ? ' (היום)' : '');
+        tr.appendChild(dayCell);
+
+        ['יוסי', 'אמי'].forEach(function (person) {
+          const td = document.createElement('td');
+          const sel = document.createElement('select');
+          sel.dataset.day = day;
+          sel.dataset.person = person;
+
+          const blank = document.createElement('option');
+          blank.value = '';
+          blank.textContent = '—';
+          sel.appendChild(blank);
+
+          END_OPTIONS.forEach(function (opt) {
+            const o = document.createElement('option');
+            o.value = opt;
+            o.textContent = opt;
+            sel.appendChild(o);
+          });
+
+          sel.value = (saved[day] && saved[day][person]) || '';
+
+          td.appendChild(sel);
+          tr.appendChild(td);
+        });
+
+        body.appendChild(tr);
+      });
+    }
+
     function openTable() {
       renderTable();
+      renderEndTable();
       showScreen('tableScreen');
     }
 
-    function saveTable() {
+    function collectTable(selector) {
       const data = {};
-      document.querySelectorAll('#tableBody select').forEach(function (sel) {
+      document.querySelectorAll(selector).forEach(function (sel) {
         const day = sel.dataset.day;
         const person = sel.dataset.person;
         if (!data[day]) data[day] = {};
         data[day][person] = sel.value;
       });
-      safeStore.set('weekTable', JSON.stringify(data));
+      return data;
+    }
+
+    function saveTable() {
+      safeStore.set('weekTable', JSON.stringify(collectTable('#tableBody select')));
+      safeStore.set('endDayTable', JSON.stringify(collectTable('#endTableBody select')));
       applyTableForToday();
       alert('הטבלה נשמרה ✓');
     }

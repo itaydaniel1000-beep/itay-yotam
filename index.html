@@ -131,6 +131,38 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
+    /* תצוגת 3 תורים (אצל אמי) */
+    .preset-cols {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: flex-start;
+      width: min(620px, 94vw);
+      margin-bottom: 16px;
+    }
+
+    .preset-col {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      flex: 1;
+    }
+
+    .preset-col-title {
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+      opacity: 0.8;
+      margin-bottom: 3px;
+      letter-spacing: 0.5px;
+    }
+
+    .preset-cols .preset-btn {
+      width: 100%;
+      font-size: 14px;
+      padding: 9px 8px;
+    }
+
     .note-box {
       width: min(420px, 90vw);
       min-height: 110px;
@@ -535,18 +567,44 @@
       alert('הטבלה נשמרה ✓');
     }
 
+    function makePresetBtn(option) {
+      const btn = document.createElement('button');
+      btn.className = 'preset-btn';
+      btn.textContent = option;
+      btn.onclick = function () {
+        document.getElementById('noteBox').value = option;
+      };
+      return btn;
+    }
+
     function renderPresets(name) {
       const wrap = document.getElementById('presets');
       wrap.innerHTML = '';
-      (PRESETS[name] || []).forEach(function (option) {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.textContent = option;
-        btn.onclick = function () {
-          document.getElementById('noteBox').value = option;
-        };
-        wrap.appendChild(btn);
-      });
+      const options = PRESETS[name] || [];
+
+      // אצל אמי — 3 תורים: ימין=אמא, אמצע=רגיל, שמאל=אבא
+      if (name === 'אמי') {
+        wrap.className = 'preset-cols';
+        const columns = [
+          { title: 'אמא', items: options.filter(function (o) { return o.indexOf('אמא') !== -1; }) },
+          { title: 'רגיל', items: options.filter(function (o) { return o.indexOf('אמא') === -1 && o.indexOf('אבא') === -1; }) },
+          { title: 'אבא', items: options.filter(function (o) { return o.indexOf('אבא') !== -1; }) }
+        ];
+        columns.forEach(function (col) {
+          const colEl = document.createElement('div');
+          colEl.className = 'preset-col';
+          const h = document.createElement('div');
+          h.className = 'preset-col-title';
+          h.textContent = col.title;
+          colEl.appendChild(h);
+          col.items.forEach(function (o) { colEl.appendChild(makePresetBtn(o)); });
+          wrap.appendChild(colEl);
+        });
+      } else {
+        // אצל יוסי — שורה רגילה
+        wrap.className = 'preset-row';
+        options.forEach(function (o) { wrap.appendChild(makePresetBtn(o)); });
+      }
     }
 
     // מי אני — מקומי למכשיר הזה בלבד (לא מסונכרן לענן)
